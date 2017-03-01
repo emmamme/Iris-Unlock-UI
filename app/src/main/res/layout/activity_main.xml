@@ -6,6 +6,13 @@
     android:id="@+id/camview"
     >
 
+    <com.example.emmachen.emmathesis.GifImageView
+        android:id="@+id/GifImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:elevation="15dip"/>
+
     <TextureView
         android:id="@+id/texture"
         android:layout_width="match_parent"

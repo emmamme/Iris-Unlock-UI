@@ -18,6 +18,13 @@
 
     </com.example.emmachen.emmathesis.ui.camera.CameraSourcePreview>
 
+    <com.example.emmachen.emmathesis.GifImageView
+        android:id="@+id/GifImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:elevation="15dip"/>
+
     <ImageButton
         android:backgroundTint="@color/colorPrimary"
         android:id="@+id/button_capture"

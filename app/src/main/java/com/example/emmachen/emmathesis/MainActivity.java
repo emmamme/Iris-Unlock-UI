@@ -38,6 +38,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
+import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -85,6 +86,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        GifImageView gifImageView = (GifImageView) findViewById(R.id.GifImageView);
+        gifImageView.setGifImageResource(R.drawable.android);
+
         Intent intent = new Intent(this, FaceTrackerActivity.class);
         startActivity(intent);
 
@@ -121,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
     }
-
+    
     void getPicture()
     {
         if(cameraDevice==null)

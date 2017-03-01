@@ -131,6 +131,8 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Sens
 
         mPreview = (CameraSourcePreview) findViewById(R.id.preview);
         mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
+        GifImageView gifImageView = (GifImageView) findViewById(R.id.GifImageView);
+        gifImageView.setGifImageResource(R.drawable.android);
 
         int choice = (int) (Math.random()*10) % randBound;
 

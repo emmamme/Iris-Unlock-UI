@@ -60,9 +60,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
+import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -92,15 +94,16 @@ import com.example.emmachen.emmathesis.ui.camera.CameraSourcePreview;
  * overlay graphics to indicate the position, size, and ID of each face.
  */
 public final class FaceTrackerActivity extends AppCompatActivity implements SensorEventListener {
-    static float thresholdUp = 65000;
-    static float thresholdDown = 55000;
+    static float thresholdUp = 70000;
+    static float thresholdDown = 30000;
     private CameraSource mCameraSource = null;
-
+    String m2d = "This is not your phone?!";
     private CameraSourcePreview mPreview;
     private GraphicOverlay mGraphicOverlay;
-
+    private long startT, endT;
     private static final String TAG = "MainActivity";
     float ax, ay, az;
+    boolean displayed = false;
     static int randBound = 3;
     SensorManager sensorManager;
     private ImageButton getpicture;
@@ -175,34 +178,23 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Sens
     }
 
     private void getPicture() {
-        Date now = new Date();
-        android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+        LayoutInflater inflater = getLayoutInflater();
+        final View dialoglayout = inflater.inflate(R.layout.config_msg, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialoglayout);
+        builder.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                m2d = ((EditText) dialoglayout.findViewById(R.id.editText)).getText().toString();
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //do nothing
+            }
+        });
 
-        try {
-            // image naming and path  to include sd card  appending name you choose for file
-            String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
-
-            // create bitmap screen capture
-            View v1 = getWindow().getDecorView().getRootView();
-            v1.setDrawingCacheEnabled(true);
-            Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
-            v1.setDrawingCacheEnabled(false);
-
-            //write to album
-            writeToAlbum(bitmap);
-
-            File imageFile = new File(mPath);
-
-            FileOutputStream outputStream = new FileOutputStream(imageFile);
-            int quality = 100;
-            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
-            outputStream.flush();
-            outputStream.close();
-
-        } catch (Throwable e) {
-            // Several error may come out with file handling or OOM
-            e.printStackTrace();
-        }
+        builder.create().show();
     }
 
     /**
@@ -278,7 +270,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Sens
     @Override
     protected void onResume() {
         super.onResume();
-
+        displayed = false;
+        ((TextView) findViewById(R.id.timed)).setText("");
+        startT = System.currentTimeMillis();
         startCameraSource();
     }
 
@@ -427,6 +421,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Sens
 
             final float facearea = face.getWidth()*face.getHeight();
 
+            final float left = face.getIsLeftEyeOpenProbability();
+            final float right = face.getIsRightEyeOpenProbability();
+
             FaceTrackerActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -434,16 +431,30 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Sens
 
                     Log.d("FACESIZE", facearea + " pixsquared");
 
-                    if( facearea > thresholdUp ){
-                        ((TextView) findViewById(R.id.msg)).setText("Please move your phone away");
-                    }else if (facearea < thresholdDown){
-                        ((TextView) findViewById(R.id.msg)).setText("Please move your phone closer");
-                    }else{
-                        ((TextView) findViewById(R.id.msg)).setText("Okay");
+                        if (facearea > thresholdUp) {
+                            ((TextView) findViewById(R.id.troll)).setText("");
+                            ((TextView) findViewById(R.id.msg)).setText("Please move your phone away");
+                            findViewById(R.id.GifImageView).setVisibility(View.INVISIBLE);
+                        } else if (facearea < thresholdDown) {
+                            ((TextView) findViewById(R.id.troll)).setText("");
+                            ((TextView) findViewById(R.id.msg)).setText("Please move your phone closer");
+                            findViewById(R.id.GifImageView).setVisibility(View.INVISIBLE);
+                        } else if(left*right < 0.0){
+                            ((TextView) findViewById(R.id.msg)).setText("Please face the camera directly");
+                            findViewById(R.id.GifImageView).setVisibility(View.INVISIBLE);
+                        }
+                        else {
+                            ((TextView) findViewById(R.id.troll)).setText(m2d);
+                            ((TextView) findViewById(R.id.msg)).setText("Your phone is unlocked");
+                            findViewById(R.id.GifImageView).setVisibility(View.VISIBLE);
+                            endT = System.currentTimeMillis();
+                            float diff = (endT - startT)/1000.0f;
+                            if(!displayed) {
+                                displayed = true;
+                                ((TextView) findViewById(R.id.timed)).setText(String.format("%.2f", diff));
+                            }
+                        }
                     }
-
-
-                }
             });
 
         }
@@ -466,10 +477,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Sens
         public void onDone() {
             mOverlay.remove(mFaceGraphic);
         }
-    }
-
-    private File getOutputMediaFile() {
-        return new File(getFilesDir(), "picMe.jpg");
     }
 
 
@@ -546,54 +553,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Sens
         matrix.postScale(sx, sx);
 
         daisy.setImageMatrix(matrix);
-    }
-
-    public void writeToAlbum(final Bitmap face){
-        ImageView daisy = (ImageView) findViewById(R.id.daisy);
-
-        Bitmap flower = ((BitmapDrawable)daisy.getDrawable()).getBitmap();
-
-        ImageView back = (ImageView) findViewById(R.id.b_back);
-
-        Bitmap blk = ((BitmapDrawable)back.getDrawable()).getBitmap();
-
-        int w = face.getWidth();
-
-        int h = face.getHeight();
-
-        final Bitmap result = Bitmap.createBitmap(w, h, face.getConfig());
-
-        Canvas canvas = new Canvas(result);
-
-        canvas.drawBitmap(face, null, new Rect(0, 0, w, h), null);
-
-        canvas.drawBitmap(blk, null, new Rect(0, 0, w, h), null);
-
-        canvas.drawBitmap(flower, null, new Rect(0, 0, w, w), null);
-
-        Log.d("SAVEIMG", "Saving face unlock");
-
-        CapturePhotoUtils.insertImage(getContentResolver(), result, "FACE_UNLOCK.jpg", "LALALA");
-
-        final Bitmap res = result;
-
-        FaceTrackerActivity.this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                //Bitmap bmp = BitmapFactory.decodeFile((new File(getFilesDir(), "picMe.jpg")).getPath());
-
-                ((ImageView) findViewById(R.id.little_dis)).setImageBitmap(result);
-
-
-            }
-        });
-
-        //ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-        //result.compress(Bitmap.CompressFormat.PNG, 100, stream);
-
-        //return stream.toByteArray();
-
     }
 
     public static Bitmap rotateImage(Bitmap source, float angle) {

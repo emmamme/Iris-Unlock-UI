@@ -18,17 +18,29 @@
 
     </com.example.emmachen.emmathesis.ui.camera.CameraSourcePreview>
 
-    <com.example.emmachen.emmathesis.GifImageView
-        android:id="@+id/GifImageView"
+    <TextView
+        android:id="@+id/timed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:textSize="12pt"
+        android:textColor="#ffffff"
+        android:elevation="15dip"/>
+
+    <com.example.emmachen.emmathesis.GifImageView
+        android:visibility="invisible"
+        android:id="@+id/GifImageView"
+        android:layout_width="30000dip"
+        android:layout_height="30000dip"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="100dip"
+        android:layout_centerHorizontal="true"
         android:elevation="15dip"/>
 
     <ImageButton
         android:backgroundTint="@color/colorPrimary"
         android:id="@+id/button_capture"
-        android:src="@drawable/ic_camera_alt_white_24dp"
+        android:src="@drawable/ic_create_white_24dp"
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:layout_alignParentBottom="true"
@@ -47,6 +59,17 @@
         android:textAlignment="center"
         android:elevation="15dip"/>
 
+    <TextView
+        android:id="@+id/troll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12pt"
+        android:layout_above="@id/msg"
+        android:textAlignment="center"
+        android:elevation="15dip"
+        android:textColor="#ff0000"
+        />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -64,7 +87,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/daisy"
-            android:src="@drawable/sunflower_mask_black" />
+            android:src="@drawable/sunflower_mask" />
 
         <ImageView
             android:id="@+id/little_dis"
